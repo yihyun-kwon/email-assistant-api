@@ -1,0 +1,29 @@
+# 참고 md
+howto/
+
+# 가상환경
+.venv/
+
+# 파이썬 실행 부산물
+__pycache__/
+*.pyc
+.pytest_cache/
+.coverage
+htmlcov/
+
+# 비밀값이 들어가는 설정 파일. .env.example 만 업로드
+.env
+
+# IDE / 에디터
+.idea/
+.vscode/*
+!.vscode/settings.json
+
+# OS 생성 파일
+Thumbs.db
+desktop.ini
+.DS_Store
+
+# 임시 파일
+~$*
+*.tmp
