@@ -29,7 +29,6 @@ class EmailRepository:
             self.save(email)
 
 
-
     # 신규 메일 작성
     def save(self, email: Email) -> Email:
         # 새 메일에 번호를 붙이고, 다음 번호를 1 올린다.
@@ -40,3 +39,8 @@ class EmailRepository:
         self._emails[email.email_id] = email
 
         return email
+
+    # 단일 메일 조회
+    def find_by_id(self, email_id: int) -> Email | None:
+        # 없는 번호일 시 KeyError 대신 None을 반환한다.
+        return self._emails.get(email_id)

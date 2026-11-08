@@ -46,8 +46,8 @@ class OpenAiLlmClient:
     # 1) 동기 질문
     # 응답이 올 때까지 해당 라인에서 스레드가 멈춰있게 된다.
     # 따라서 그동안 이 스레드는 다른 일을 할 수 없다.
-    # instructions => 시스템 프롬프트, questions => 유저 프롬프트
-    def ask(self, instructions: str, questions: str) -> str:
+    # instructions => 시스템 프롬프트, question => 유저 프롬프트
+    def ask(self, instructions: str, question: str) -> str:
 
         # 요청 시작시간 기록
         start = time.perf_counter()
@@ -61,7 +61,7 @@ class OpenAiLlmClient:
                 # 지시문(시스템 프롬프트) 지정
                 instructions=instructions,
                 # 질문(손님의 채팅) 지정
-                input=questions,
+                input=question,
                 # 출력 토큰 상한 지정
                 max_output_tokens=self.settings.openai_max_output_tokens,
                 # 추론 정도 지정
@@ -81,7 +81,7 @@ class OpenAiLlmClient:
         return response.output_text
 
     # 2) 비동기 질문
-    async def ask_async(self, instructions: str, questions: str) -> str:
+    async def ask_async(self, instructions: str, question: str) -> str:
 
         # 요청 시작시간 기록
         start = time.perf_counter()
@@ -95,7 +95,7 @@ class OpenAiLlmClient:
                 # 지시문(시스템 프롬프트) 지정
                 instructions=instructions,
                 # 질문(손님의 채팅) 지정
-                input=questions,
+                input=question,
                 # 출력 토큰 상한 지정
                 max_output_tokens=self.settings.openai_max_output_tokens,
                 # 추론 정도 지정

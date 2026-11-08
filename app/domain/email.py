@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 
-
+# 메일 한 건을 나타내는 엔티티 클래스
 @dataclass
 class Email:
     # 메일 번호(PK)
