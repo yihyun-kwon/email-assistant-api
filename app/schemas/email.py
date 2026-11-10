@@ -40,7 +40,8 @@ class EmailResponse(CamelModel):
 class ReplyCreateRequest(CamelModel):
 
     # 답장에 담을 내용 : 2글자 이상 500글자 이하
-    key_point: str = Field(min_length=2, max_length=500)
+    key_point: str = Field(
+        min_length=2, max_length=500)
     # 발신자와의 관계 : 정해진 값만 받는다. 목록에 없는 값이면 422 (말투를 정할 때 사용)
     sender_relationship: Literal["상사", "동료", "거래처", "고객"]
 
@@ -52,4 +53,4 @@ class ReplyResponse(CamelModel):
     # LLM이 생성한 답장 본문
     content: str
     # 응답한 모델 이름
-    model: str    
+    model: str
