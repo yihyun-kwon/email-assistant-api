@@ -64,8 +64,8 @@ class Settings(BaseSettings):
     replier_name: str = "홍길동"
 
     # LLM 호출 방식 : openai(OpenAI SDK 직접) 또는 langchain(LangChain 경유). 둘 다 같은 OpenAI 모델을 호출한다.
-    # 이 값은 수정하지 않고, LangChain을 쓰려면 .env에 LLM_PROVIDER=langchain을 적은 뒤 서버를 다시 시작한다.
-    llm_provider: Literal["openai", "langchain"] = "openai"
+    # 기본값은 langchain. .env의 LLM_PROVIDER=openai로 바꾸면 OpenAI SDK 직접 호출로 비교할 수 있다.
+    llm_provider: Literal["openai", "langchain"] = "langchain"
 
 
 

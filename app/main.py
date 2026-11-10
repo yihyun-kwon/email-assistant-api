@@ -2,8 +2,8 @@ from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
 
-from app.clients.llm_client import FakeLlmClient
-from app.clients.llm_client import OpenAiLlmClient
+from app.clients.llm_client import FakeLlmClient, OpenAiLlmClient
+from app.clients.langchain_client import LangChainLlmClient
 from app.core.config import get_settings
 from app.core.exceptions import register_exception_handlers
 from app.routers import email_router
@@ -19,6 +19,9 @@ async def lifespan(app: FastAPI):
         print(f"[lifespan] 가짜 LLM 클라이언트를 사용한다 (FAKE_LLM={settings.fake_llm}, "
               f"키 있음={settings.openai_api_key is not None}, 응답까지 {settings.fake_llm_delay_seconds}초)")
         app.state.llm_client = FakeLlmClient(settings)
+    elif settings.llm_provider == "langchain":
+        print(f"[lifespan] LangChain 클라이언트를 사용한다 (model={settings.openai_model})")
+        app.state.llm_client = LangChainLlmClient(settings)
     else:
         print(f"[lifespan] OpenAI 클라이언트를 사용한다 (model={settings.openai_model})")
         app.state.llm_client = OpenAiLlmClient(settings)

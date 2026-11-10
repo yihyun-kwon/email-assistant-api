@@ -5,6 +5,7 @@ import asyncio
 
 from app.core.config import Settings
 from app.core.exceptions import AiRequestError
+from app.schemas.reply_draft import ReplyDraft
 
 # 1. OpenAI를 왔다 갔다 하는 클라이언트 클래스 정의
 class OpenAiLlmClient:
@@ -32,7 +33,7 @@ class OpenAiLlmClient:
         )
 
     # 비동기 질문
-    async def ask_async(self, instructions: str, question: str) -> str:
+    async def ask_async(self, instructions: str, question: str) -> ReplyDraft:
 
         # 요청 시작시간 기록
         start = time.perf_counter()
@@ -63,7 +64,7 @@ class OpenAiLlmClient:
         print_usage("ask_async", response, start)
 
         # OpenAI 서버의 응답 문장을 반환한다
-        return response.output_text
+        return ReplyDraft(content=response.output_text)
     # 정리 함수
     async def close(self):
         pass
@@ -128,9 +129,9 @@ class FakeLlmClient:
 
     # await asyncio.sleep : 이 코루틴만 멈춘다. 기다리는 동안 이벤트 루프는 다른 요청을 처리한다.
     # 비동기 클라이언트가 응답을 기다리는 것과 같은 상황을 만든다.
-    async def ask_async(self, instructions: str, question: str) -> str:
+    async def ask_async(self, instructions: str, question: str) -> ReplyDraft:
         await asyncio.sleep(self.delay_seconds)
-        return f"(가짜 응답) '{question}'에 대한 응답입니다. {self.delay_seconds}초 기다렸습니다."
+        return ReplyDraft(content=f"(가짜 응답) '{question}'에 대한 응답입니다. {self.delay_seconds}초 기다렸습니다.")
 
     async def close(self) -> None:
         pass

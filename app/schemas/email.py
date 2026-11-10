@@ -54,3 +54,8 @@ class ReplyResponse(CamelModel):
     content: str
     # 응답한 모델 이름
     model: str
+    # 답장의 근거로 사용한 규정 조항 번호
+    cited_rules: list[str]
+    # 답장에 담을 내용만으로 답하지 못해 사용자가 확인해야 할 질문
+    needs_confirmation: list[str]
+
