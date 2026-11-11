@@ -67,6 +67,8 @@ class Settings(BaseSettings):
     # 기본값은 langchain. .env의 LLM_PROVIDER=openai로 바꾸면 OpenAI SDK 직접 호출로 비교할 수 있다.
     llm_provider: Literal["openai", "langchain"] = "langchain"
 
+    # 규정집을 벡터로 바꾸는 임베딩 모델. 채팅 모델(OPENAI_MODEL)과 다른 종류다.
+    openai_embedding_model: str = "text-embedding-3-large"
 
 
 # 3. 설정 객체 반환함수 정의 (feat. @lru_cache)
