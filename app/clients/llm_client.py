@@ -33,7 +33,17 @@ class OpenAiLlmClient:
         )
 
     # 비동기 질문
-    async def ask_async(self, instructions: str, question: str) -> ReplyDraft:
+    async def ask_async(self, instructions: str, sender_name: str, sender_relationship: str,
+    subject: str, content: str, key_point: str) -> ReplyDraft:
+
+        # OpenAI SDK는 템플릿이 없어 입력 문자열을 직접 만든다.
+        # 비교할 수 있도록 LangChain 클라이언트의 템플릿과 같은 모양으로 맞춘다.
+        question = (
+            f"[받은 메일]\n보낸 사람: {sender_name}\n"
+            f"나와의 관계: {sender_relationship}\n"
+            f"제목: {subject}\n내용: {content}\n\n"
+            f"[답장에 담을 내용]\n{key_point}"
+        )
 
         # 요청 시작시간 기록
         start = time.perf_counter()
@@ -46,7 +56,7 @@ class OpenAiLlmClient:
                 model=self.settings.openai_model,
                 # 지시문(시스템 프롬프트) 지정
                 instructions=instructions,
-                # 질문(손님의 채팅) 지정
+                # 조립한 메일 정보
                 input=question,
                 # 출력 토큰 상한 지정
                 max_output_tokens=self.settings.openai_max_output_tokens,
@@ -124,12 +134,25 @@ class FakeLlmClient:
 
     # time.sleep : 이 스레드를 멈춰 세운다. 동기 클라이언트가 응답을 기다리는 것과 같은 상황을 만든다.
     def ask(self, instructions: str, question: str) -> str:
+
         time.sleep(self.delay_seconds)
         return f"(가짜 응답) '{question}'에 대한 응답입니다. {self.delay_seconds}초 기다렸습니다."
 
     # await asyncio.sleep : 이 코루틴만 멈춘다. 기다리는 동안 이벤트 루프는 다른 요청을 처리한다.
     # 비동기 클라이언트가 응답을 기다리는 것과 같은 상황을 만든다.
-    async def ask_async(self, instructions: str, question: str) -> ReplyDraft:
+
+    async def ask_async(self, instructions: str, sender_name: str, sender_relationship: str,
+    subject: str, content: str, key_point: str) -> ReplyDraft:
+
+        # OpenAI SDK는 템플릿이 없어 입력 문자열을 직접 만든다.
+        # 비교할 수 있도록 LangChain 클라이언트의 템플릿과 같은 모양으로 맞춘다.
+        question = (
+            f"[받은 메일]\n보낸 사람: {sender_name}\n"
+            f"나와의 관계: {sender_relationship}\n"
+            f"제목: {subject}\n내용: {content}\n\n"
+            f"[답장에 담을 내용]\n{key_point}"
+        )
+
         await asyncio.sleep(self.delay_seconds)
         return ReplyDraft(content=f"(가짜 응답) '{question}'에 대한 응답입니다. {self.delay_seconds}초 기다렸습니다.")
 
