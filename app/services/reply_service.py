@@ -50,20 +50,16 @@ class ReplyService:
         if email is None:
             raise EmailNotFoundError(email_id)
 
-        prompt = f"""
-            [받은 메일]
-            보낸 사람: {email.sender_name}
-            나와의 관계: {request.sender_relationship}
-            제목: {email.subject}
-            내용: {email.content}
 
-            [답장에 담을 내용]
-            {request.key_point}
-            """
 
         draft = await self.llm_client.ask_async(
             instructions=INSTRUCTIONS,
-            question=prompt)
+            sender_name=email.sender_name,
+            sender_relationship=request.sender_relationship,
+            subject=email.subject,
+            content=email.content,
+            key_point=request.key_point
+            )
 
         # 받는 사람 호칭 : 메일 본문에서 직급이 있을 시 "이름 직급님", 없을 시 "이름님"
         recipient = f"{email.sender_name} {draft.sender_title}님" if draft.sender_title else f"{email.sender_name}님"
