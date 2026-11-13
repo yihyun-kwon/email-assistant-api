@@ -1,4 +1,4 @@
-from langchain_core.documents import Document
+from app.rag.rulebook_retriever import build_search_query, format_docs
 from langchain_core.runnables import RunnablePassthrough
 from langchain_core.vectorstores import VectorStoreRetriever
 import openai
@@ -10,19 +10,6 @@ from app.clients.llm_client import to_ai_request_error
 from app.core.config import Settings
 from app.schemas.reply_draft import ReplyDraft
 
-# 검색된 조항들을 "조 제목 + 본문" 문자열로 합친다.
-# 조 번호는 metadata에만 있어 제목을 앞에 붙인다.
-def format_docs(docs: list[Document]) -> str:
-    return "\n\n".join(doc.metadata.get("article") + "\n" + doc.page_content
-        for doc in docs
-        if doc.metadata.get("article"))
-
-def build_search_query(data: dict) -> str:
-    return "\n".join([
-        data["subject"],
-        data["content"],
-        data["key_point"]
-    ])
 
 # LangChain(ChatOpenAI) 클라이언트
 class LangChainLlmClient:

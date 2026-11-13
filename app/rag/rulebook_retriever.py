@@ -1,3 +1,6 @@
+from collections.abc import Mapping
+from typing import Any
+from langchain_core.documents import Document
 from langchain_openai import OpenAIEmbeddings
 from langchain_text_splitters import MarkdownHeaderTextSplitter
 from langchain_chroma import Chroma
@@ -28,3 +31,18 @@ def build_rulebook_retriever(settings: Settings) -> VectorStoreRetriever:
         collection_name="rulebook"
     )
     return vectorstore.as_retriever(search_kwargs={"k": 2})
+
+# 검색된 조항들을 "조 제목 + 본문" 문자열로 합친다.
+# 조 번호는 metadata에만 있어 제목을 앞에 붙인다.
+def format_docs(docs: list[Document]) -> str:
+    return "\n\n".join(doc.metadata.get("article") + "\n" + doc.page_content
+        for doc in docs
+        if doc.metadata.get("article"))
+
+# 규정 검색어 : 제목, 내용, keyPoint만 이어 붙인다. 관계와 보낸 사람은 검색을 흐리게 하므로 뺀다.
+def build_search_query(data: Mapping[str, Any]) -> str:
+    return "\n".join([
+        data["subject"],
+        data["content"],
+        data["key_point"]
+    ])
