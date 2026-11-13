@@ -4,8 +4,9 @@ CLAUDE.md
 Claude.md
 .claude/
 
-# 참고 md
+# 학습용 md & PDF
 howto/
+study/
 
 # 가상환경
 .venv/

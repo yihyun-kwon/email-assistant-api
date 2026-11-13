@@ -26,6 +26,7 @@ INSTRUCTIONS = """
 [참고 규정]이 받은 메일이나 답장에 담을 내용과 관련이 없으면 사용하지 않는다.
 답장에 실제로 반영한 조항의 번호만 cited_rules에 적는다. (예: 제15조) 반영한 규정이 없으면 비워 둔다.
 답장에 담을 내용만으로 답할 수 없는 질문은 지어내지 말고 needs_confirmation에 적는다.
+받은 메일의 서명이나 본문에 발신자의 직급(팀장, 과장, 대리 등)이 적혀 있으면 sender_title에 그대로 적는다. 적혀 있지 않으면 비워 두고 추측하지 않는다.
 별도의 설명이나 안내 없이 완성된 답장 본문만 출력한다.
 """
 
@@ -64,10 +65,14 @@ class ReplyService:
             instructions=INSTRUCTIONS,
             question=prompt)
 
+        # 받는 사람 호칭 : 메일 본문에서 직급이 있을 시 "이름 직급님", 없을 시 "이름님"
+        recipient = f"{email.sender_name} {draft.sender_title}님" if draft.sender_title else f"{email.sender_name}님"
+
+
         # LLM이 쓴 본문 앞에 인사말, 뒤에 서명을 붙여 답장을 완성한다.
         # 서명의 이름은 .env의 REPLIER_NAME 값을 쓰고, 부서와 직급은 고정이다.
         content =(
-                f"안녕하세요, {email.sender_name}님. 경영지원팀 {self.replier_name}입니다.\n\n"
+                f"안녕하세요, {recipient}. 경영지원팀 {self.replier_name}입니다.\n\n"
                 f"{draft.content.strip()}\n\n"
                 f"경영지원팀 {self.replier_name} 사원 드림"
                 )

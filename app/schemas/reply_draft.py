@@ -1,11 +1,14 @@
 from pydantic import BaseModel, Field
 
-# LLM이 돌려줄 답장 초안 양식 
+# LLM이 돌려줄 답장 초안 양식
 class ReplyDraft(BaseModel):
     """LLM이 작성한 답장 초안 (API 응답 DTO가 아니라 LLM 출력용 양식)"""
 
     # 답장 본문: 인사말과 서명은 ReplyService가 붙이므로 본문만 받는다.
     content: str = Field(description="인사말, 자기소개, 서명을 뺀 답장 본문. 답변 내용으로 시작해 마무리 인사로 끝낸다.")
+
+    # 받은 메일의 서명이나 본문에 적힌 발신자 직급. 명시돼 있지 않으면 None
+    sender_title: str | None = Field(default=None, description="받은 메일에 적힌 발신자의 직급. 없으면 null")
 
     # 근거 조항 목록: 답장에 반영한 사내 규정 조항 번호 (기본값 빈 리스트)
     cited_rules: list[str] = Field(
