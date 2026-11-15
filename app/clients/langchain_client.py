@@ -1,4 +1,4 @@
-from langchain_core.documents import Document
+from app.rag.rulebook_retriever import build_search_query, format_docs
 from langchain_core.runnables import RunnablePassthrough
 from langchain_core.vectorstores import VectorStoreRetriever
 import openai
@@ -10,12 +10,6 @@ from app.clients.llm_client import to_ai_request_error
 from app.core.config import Settings
 from app.schemas.reply_draft import ReplyDraft
 
-# 검색된 조항들을 "조 제목 + 본문" 문자열로 합친다.
-# 조 번호는 metadata에만 있어 제목을 앞에 붙인다.
-def format_docs(docs: list[Document]) -> str:
-    return "\n\n".join(doc.metadata.get("article") + "\n" + doc.page_content
-        for doc in docs
-        if doc.metadata.get("article"))
 
 # LangChain(ChatOpenAI) 클라이언트
 class LangChainLlmClient:
@@ -44,29 +38,38 @@ class LangChainLlmClient:
             max_retries=1,
         )
 
-        # 프롬프트 템플릿 : 요청마다 지시문과 질문을 빈칸에 채운다.
+        # 프롬프트 템플릿
         prompt = ChatPromptTemplate.from_messages([
             ("system", "{instructions}\n\n[참고 규정]\n{context}"),
-            ("human", "{question}")
+            ("human",
+            "[받은 메일]\n보낸 사람: {sender_name}\n"
+            "나와의 관계: {sender_relationship}\n"
+            "제목: {subject}\n내용: {content}\n\n"
+            "[답장에 담을 내용]\n{key_point}")
         ])
 
         # 체인 : 템플릿 → 모델 → ReplyDraft 양식으로 받기 (구조화 출력)
         self.chain = (
             RunnablePassthrough.assign(
-                context=(lambda x: x["question"]) | self.retriever | format_docs
+                context= build_search_query | self.retriever | format_docs
             )
             | prompt
             | self.llm.with_structured_output(ReplyDraft)
         )
 
     # 비동기 질문
-    async def ask_async(self, instructions: str, question: str) -> ReplyDraft:
+    async def ask_async(self, instructions: str, sender_name: str, sender_relationship: str,
+    subject: str, content: str, key_point: str) -> ReplyDraft:
 
         # 템플릿의 빈칸 이름을 키로 값을 넘긴다.
         try:
             result = await self.chain.ainvoke({
                 "instructions": instructions,
-                "question": question,
+                "sender_name":  sender_name,
+                "sender_relationship": sender_relationship,
+                "subject": subject,
+                "content": content,
+                "key_point": key_point
             })
         # 기존 변환 함수를 재사용하여 502로 응답하게 한다.
         except openai.OpenAIError as e:
