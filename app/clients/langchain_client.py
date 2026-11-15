@@ -1,14 +1,15 @@
-from app.rag.rulebook_retriever import build_search_query, format_docs
+from app.graphs.reply_graph import build_reply_graph
+import openai
+from langchain_openai import ChatOpenAI
+
 from langchain_core.runnables import RunnablePassthrough
 from langchain_core.vectorstores import VectorStoreRetriever
-import openai
-
 from langchain_core.prompts.chat import ChatPromptTemplate
-from langchain_openai import ChatOpenAI
 
 from app.clients.llm_client import to_ai_request_error
 from app.core.config import Settings
 from app.schemas.reply_draft import ReplyDraft
+from app.rag.rulebook_retriever import build_search_query, format_docs
 
 
 # LangChain(ChatOpenAI) 클라이언트
@@ -56,24 +57,35 @@ class LangChainLlmClient:
             | prompt
             | self.llm.with_structured_output(ReplyDraft)
         )
+        # 검토 루프 그래프 : 검색 → 초안 → 검토
+        self.graph = build_reply_graph(self.llm, self.retriever)
 
     # 비동기 질문
     async def ask_async(self, instructions: str, sender_name: str, sender_relationship: str,
     subject: str, content: str, key_point: str) -> ReplyDraft:
 
-        # 템플릿의 빈칸 이름을 키로 값을 넘긴다.
+        # 그래프의 처음 State를 넘긴다.
+
         try:
-            result = await self.chain.ainvoke({
+            state = await self.graph.ainvoke({
                 "instructions": instructions,
                 "sender_name":  sender_name,
                 "sender_relationship": sender_relationship,
                 "subject": subject,
                 "content": content,
-                "key_point": key_point
+                "key_point": key_point,
+                "context": "",
+                "attempts": 0,
+                "passed": False,
+                "draft": None,
+                "feedback": None
             })
         # 기존 변환 함수를 재사용하여 502로 응답하게 한다.
         except openai.OpenAIError as e:
             raise to_ai_request_error(e) from e
+
+        # 그래프 결과(State)에서 최종 초안을 꺼낸다.
+        result = state["draft"]
 
         # 결과가 ReplyDraft 양식인지 확인한다.
         if not isinstance(result, ReplyDraft):
