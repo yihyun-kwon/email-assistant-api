@@ -47,3 +47,7 @@ app = FastAPI(
 register_exception_handlers(app)
 
 app.include_router(email_router.router)
+
+@app.get("/{email_id}", tags=["상태"], summary="서버 상태 확인")
+def health() -> dict[str, str]:
+    return {"status": "ok", "model": app.state.llm_client.model}

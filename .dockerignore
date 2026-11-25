@@ -1,0 +1,33 @@
+# docker build는 먼저 이 폴더 전체를 도커 엔진에 보낸다. 여기에 적은 것은 보내지 않는다.
+# 보내는 양이 줄어 빌드가 빨라지고, 비밀값이 든 파일이 이미지에 들어가는 일을 막는다.
+
+# 가상환경 (윈도우용이라 리눅스 컨테이너에서 쓸 수 없다. 이미지 안에서 새로 만든다)
+.venv/
+
+# 파이썬 실행 부산물
+**/__pycache__/
+**/*.pyc
+.pytest_cache/
+.coverage
+htmlcov/
+
+# IDE 설정
+.idea/
+.vscode/
+
+# Git
+.git/
+.gitignore
+.gitattributes
+
+# 비밀값 (컨테이너를 실행할 때 따로 넘긴다)
+.env
+
+# 이미지에 필요하지 않은 것
+# *.md는 맨 바깥 폴더의 md만 제외한다. data/의 규정집 md는 서버가 읽으므로 이미지에 들어간다.
+howto/
+study/
+doc/
+*.md
+compose*.yaml
+Dockerfile*
