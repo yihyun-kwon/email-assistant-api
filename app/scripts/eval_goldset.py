@@ -3,7 +3,6 @@ load_dotenv()
 
 import asyncio, json
 from langsmith import Client, aevaluate
-from pydantic import BaseModel, Field
 
 from app.services.reply_service import INSTRUCTIONS
 from app.rag.rulebook_retriever import build_rulebook_retriever
@@ -54,16 +53,17 @@ if not client.has_dataset(dataset_name=DATASET_NAME):
         ]
     )
 
-def cited_rules_hit(inputs: dict, outputs: dict, reference_outputs: dict) -> bool:
-    return set(reference_outputs["source"]) <= set(outputs["cited_rules"])
+def cited_rules_hit(inputs: dict, outputs: dict, reference_outputs: dict) -> dict:
+    hit = set(reference_outputs["source"]) <= set(outputs["cited_rules"])
+    return {"key": "cited_rules_hit", "score": 1 if hit else 0}
 
-class Judgement(BaseModel):
-    correct: bool = Field(description="응답이 [채점 기준]을 모두 지켰다면 true")
-    reason: str = Field(description="판단 이유 한 문장")
+async def main() -> None:
+    await aevaluate(
+        target,
+        data=DATASET_NAME,
+        evaluators=[cited_rules_hit],
+        experiment_prefix="reply-graph",
+    )
 
-    judge = llm_client.llm.with_structured_output(Judgement)
-
-    def correctness(inputs: dict, outputs: dict, reference_outputs: dict) -> dict:
-        judgement = judge.invoke(
-            "너는 업무 메일 답장을 채점한다. 말투와 길이는 채점하지 않는다 [채점 기준]을 지켰는지만 본다. \n\n"
-        )
+if __name__ == "__main__":
+    asyncio.run(main())
